@@ -428,6 +428,10 @@ class etc {
      * @param {string} filePath 
      */
     createConfig(filePath) {
+        let dirPath = filePath.replace(/\/[^\/]*$/, '')
+        fs.mkdirSync(dirPath, {
+            recursive: true
+        });
         if (!fs.existsSync(filePath)) {
             fs.createFileSync(filePath)
         }

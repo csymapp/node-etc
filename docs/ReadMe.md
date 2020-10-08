@@ -19,6 +19,7 @@
     * [.editConfig(configType, filePath, config)](#etc+editConfig)
     * [.save(configType, filePath, config)](#etc+save)
     * [.createConfig(filePath)](#etc+createConfig)
+    * [.all()](#etc+all)
 
 <a name="new_etc_new"></a>
 
@@ -192,3 +193,9 @@ create file if it does not exists
 | --- | --- |
 | filePath | <code>string</code> | 
 
+<a name="etc+all"></a>
+
+### etc.all()
+Load all configurations
+
+**Kind**: instance method of [<code>etc</code>](#etc)  

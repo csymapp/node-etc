@@ -3,252 +3,278 @@ node-etc
 
 Configuration loader for node.js applications.
 
-[![build status](https://secure.travis-ci.org/cpsubrian/node-etc.png)](http://travis-ci.org/cpsubrian/node-etc)
+[![Build Status](https://travis-ci.com/csymapp/node-etc.svg?branch=master)](https://travis-ci.com/csymapp/node-etc)
 
 Idea
 ----
 Your application probably needs to load configuration from multiple sources and make them available as one object. Etc is here to help!
 
-Etc provides a fairly complete API for loading configuration from a variety of sources, however, its been engineered to easily load config from (in order of precedence): argv, environment, files in `./etc` and `/etc/`, package.json, and defaults. Etc. also supports a simple plugin system so new file parsers or other sources of configuration can be handled.
+Etc provides a fairly complete API for loading configuration from a variety of sources, however, its been engineered to easily load config from (in order of precedence): argv, environment, files in `/etc/`, package.json, and defaults.
+
+Etc. also allows you to edit and save your configuration.
 
 Examples
 --------
-#### Easy Mode
+#### Create configuration
 ```js
-const conf = require('node-etc')().all().toJSON();
+const conf = require('node-etc');
+conf.createConfig('/etc/node-etc/conf.yaml')
 ```
 
-#### Easy Mode done manually
+#### add values to configuration
 ```js
-const etc = require('node-etc')();
+const conf = require('node-etc');
 
-etc
-  .argv()
-  .env()
-  .etc()
-  .pkg();
+conf.addConfig('yaml', '/etc/node-etc/conf.yaml', { Field: "value", Ta: "bitha" }));
+conf.addConfig('env', '/etc/node-etc/.env', { Field: "value", Ta: "bitha" }));
 
-const conf = etc.toJSON();
 ```
 
 #### Load configuration from argv, env, a file, and defaults.
 ```js
-const etc = require('etc')();
+const conf = require('node-etc');
 
-etc.argv();
-etc.env();
-etc.file('/path/to/you/file/config.json');
-etc.add({
-  my: 'defaults'
-});
+// read package.json
+conf.packageJson('/home/brian/Code/CSECO/csycms');
+conf.packageJson('CSECO');
+conf.packageJson();
 
-const conf = etc.toJSON();
-```
+// read json file
+conf.parseJSON('CSECO');
+conf.parseJSON('/etc/node-etc/a.json');
 
-#### Load configuration from `/etc/myapp/*`
-```js
-const etc = require('etc')();
-etc.folder('/etc/myapp');
-const conf = etc.toJSON();
-```
+conf.argv());
 
-#### Work with configuration using deliminated keys
-```js
-const etc = require('etc')();
+// read all enviroment values
+conf.env());
 
-etc.add({
-  host: 'localhost',
-  port: 3000,
-  meta: {
-    title: 'Cool title'
-  }
-});
+// read only value in .env file
+conf.parseDotEnvOnly('config/.env');
 
-console.log(etc.get('meta:title'));
-// Cool title
+// read from yaml
+conf.parseYAML('/etc/node-etc/conf.yml');
+conf.parseYAML('conf.yml');
+conf.parseYAML();
 
-etc.set('meta:description', 'This is a really cool app');
+// read all possible configuration files from directory
+conf.directory('/etc/node-etc');
 
-console.log(etc.get('meta'));
-// { title: 'Cool title',
-//  description: 'This is a really cool app' }
 ```
 
 API
 ---
-### require('etc')([delim])
-Etc exports a factory function the creates instances of `Etc` objects. You can
-optionally specify the key delimiter to use (defaults to ` : `)
 
-### etc.get(key)
-Fetch a value from the configuration stack. Keys can be simple strings or
-deliminated strings such as `db:host`, which will dive into the configuration
-to grab a nested value.
+Referer to the [documentation](/docs/ReadMe.md)
 
-### etc.set(key, value)
-Set a new configuration value. Primitives will override exsting values
-whereas Objects and Arrays will merge. The key can be a simple string or a
-deliminated string. (Chainable)
+<a name="etc"></a>
 
-### etc.reset(key, value)
-Set a configuration value, overriding whatever was there. The key can be a
-simple string or a deliminated string. (Chainable)
+## etc
+**Kind**: global class  
 
-### etc.clear(key)
-Clear the configuration stored under a given key. The key can be a simple string
-or a deliminated string. (Chainable)
+* [etc](#etc)
+    * [new etc()](#new_etc_new)
+    * [.packageJson([dir])](#etc+packageJson) ⇒ <code>object</code>
+    * [.parseJSON(filePath)](#etc+parseJSON) ⇒ <code>object</code>
+    * [.parseYAML([filePath])](#etc+parseYAML) ⇒ <code>object</code>
+    * [.argv()](#etc+argv) ⇒ <code>object</code>
+    * [.parseDotEnvOnly([dir])](#etc+parseDotEnvOnly) ⇒ <code>object</code>
+    * [.env([dir])](#etc+env) ⇒ <code>object</code>
+    * [.directory(dir)](#etc+directory) ⇒ <code>object</code>
+    * [.getFilePath(configType, fileName)](#etc+getFilePath)
+    * [.readConfigData(configType, filePath, config)](#etc+readConfigData)
+    * [.addConfig(configType, filePath, config)](#etc+addConfig)
+    * [.deleteConfig(configType, filePath, config)](#etc+deleteConfig)
+    * [.editConfig(configType, filePath, config)](#etc+editConfig)
+    * [.save(configType, filePath, config)](#etc+save)
+    * [.createConfig(filePath)](#etc+createConfig)
+    * [.all()](#etc+all)
 
-### etc.toJSON()
-Returns all of the configuration, deep-merged into a single object.
+<a name="new_etc_new"></a>
 
-### etc.use(plugin, options)
-Attach an etc plugin. See more below. (Chainable)
+### new etc()
+constructor
+
+<a name="etc+packageJson"></a>
+
+### etc.packageJson([dir]) ⇒ <code>object</code>
+Read package.json [1] of current project or [2] from any other location. If dir is not supplied, the function moves up the directories in the cwd path and returns the first package.json found.
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+**Returns**: <code>object</code> - - Returns json object found or empty object  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [dir] | <code>string</code> | directory name from which to read package.json. Can be either a directory name or absolute path of directory |
+
+<a name="etc+parseJSON"></a>
+
+### etc.parseJSON(filePath) ⇒ <code>object</code>
+Read json file
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+**Returns**: <code>object</code> - - Returns json object found or empty object  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filePath | <code>string</code> | file to read |
+
+<a name="etc+parseYAML"></a>
+
+### etc.parseYAML([filePath]) ⇒ <code>object</code>
+Read yaml file
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+**Returns**: <code>object</code> - - Returns json object found or empty object  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [filePath] | <code>string</code> | file to read. Either absolute path or file name. If filename is not given, it reads conf.yaml File name is given with either .yaml/.yml extension or without. |
+
+<a name="etc+argv"></a>
+
+### etc.argv() ⇒ <code>object</code>
+return command line arguments
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+**Returns**: <code>object</code> - - Returns object containing command line arguments  
+<a name="etc+parseDotEnvOnly"></a>
+
+### etc.parseDotEnvOnly([dir]) ⇒ <code>object</code>
+Loads only environment variables from a .env file in either [1] current project or [2] from any other location and returns process.env. If dir is not supplied, the function moves up the directories in the cwd path and returns the first .env file found.
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+**Returns**: <code>object</code> - - Returns json object found or empty object  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [dir] | <code>string</code> | - directory name from which to read .env file. Can be either a directory name or absolute path of directory |
+
+<a name="etc+env"></a>
+
+### etc.env([dir]) ⇒ <code>object</code>
+Loads environment variables from a .env file in either [1] current project or [2] from any other location and returns process.env. If dir is not supplied, the function moves up the directories in the cwd path and returns the first .env file found.
+If absolute path is not given for dir, it also loads .env from /etc/{dir}. If dir is not given, it is taken as the program name as contained in the package.json file in the root directory of the project.
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+**Returns**: <code>object</code> - - Returns json object found or empty object  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [dir] | <code>string</code> | <code>&quot;&#x27;&#x27;&quot;</code> | directory name from which to read .env file. Can be either a directory name or absolute path of directory |
+
+<a name="etc+directory"></a>
+
+### etc.directory(dir) ⇒ <code>object</code>
+read configuration from .yaml/.yml, .env and json files in given directory.
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| dir | <code>string</code> | absolute path of directory |
+
+<a name="etc+getFilePath"></a>
+
+### etc.getFilePath(configType, fileName)
+Get filepath if file with given name exists in root directory or project or in /etc/{programName}
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+
+| Param | Type |
+| --- | --- |
+| configType | <code>&#x27;json&#x27;</code> \| <code>&#x27;yaml&#x27;</code> \| <code>&#x27;yml&#x27;</code> \| <code>&#x27;env&#x27;</code> | 
+| fileName | <code>string</code> | 
+
+<a name="etc+readConfigData"></a>
+
+### etc.readConfigData(configType, filePath, config)
+readConfiguration of configType from given path
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| configType | <code>&#x27;json&#x27;</code> \| <code>&#x27;yaml&#x27;</code> \| <code>&#x27;yml&#x27;</code> \| <code>&#x27;env&#x27;</code> |  |
+| filePath | <code>string</code> | filename with/without extension/ absolute path |
+| config | <code>object</code> |  |
+
+<a name="etc+addConfig"></a>
+
+### etc.addConfig(configType, filePath, config)
+Add new values to config/modify existing ones
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| configType | <code>&#x27;json&#x27;</code> \| <code>&#x27;yaml&#x27;</code> \| <code>&#x27;yml&#x27;</code> \| <code>&#x27;env&#x27;</code> |  |
+| filePath | <code>string</code> | filename with/without extension/ absolute path |
+| config | <code>object</code> |  |
+
+<a name="etc+deleteConfig"></a>
+
+### etc.deleteConfig(configType, filePath, config)
+Delete values from config
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| configType | <code>&#x27;json&#x27;</code> \| <code>&#x27;yaml&#x27;</code> \| <code>&#x27;yml&#x27;</code> \| <code>&#x27;env&#x27;</code> |  |
+| filePath | <code>string</code> | filename with/without extension/ absolute path |
+| config | <code>array</code> | fields to remove |
+
+<a name="etc+editConfig"></a>
+
+### etc.editConfig(configType, filePath, config)
+Add new values to config/modify existing ones
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| configType | <code>&#x27;json&#x27;</code> \| <code>&#x27;yaml&#x27;</code> \| <code>&#x27;yml&#x27;</code> \| <code>&#x27;env&#x27;</code> |  |
+| filePath | <code>string</code> | filename with/without extension/ absolute path |
+| config | <code>object</code> |  |
+
+<a name="etc+save"></a>
+
+### etc.save(configType, filePath, config)
+Save config values
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| configType | <code>&#x27;json&#x27;</code> \| <code>&#x27;yaml&#x27;</code> \| <code>&#x27;yml&#x27;</code> \| <code>&#x27;env&#x27;</code> |  |
+| filePath | <code>string</code> | absolute path |
+| config | <code>array</code> | fields to save |
+
+<a name="etc+createConfig"></a>
+
+### etc.createConfig(filePath)
+create file if it does not exists
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+
+| Param | Type |
+| --- | --- |
+| filePath | <code>string</code> | 
+
+<a name="etc+all"></a>
 
 ### etc.all()
-Alias for `etc.argv().env().etc().pkg()` (Chainable)
+Load all configurations
 
-### etc.argv()
-Parses argv using [optimist](https://github.com/substack/node-optimist)
-and adds it to the configuration. (Chainable)
-
-### etc.env(prefix [app], delim [_])
-Adds any environment variables that start with the prefix
-(defaults to 'app_') to the configuration. The prefix is stripped from the key.
- (Chainable)
-
-### etc.add(obj)
-Add configuration from an object literal. (Chainable)
-
-### etc.file(filePath, [nameed])
-Add configuration from a file. A suitable parser must be registered
-in etc.parsers ('.json' and '.js' supported by default). If `named` is true
-then the extension will be stripped from the filename and the contents will
-be added nested under that name.
-
-For example, if your filename is `/path/to/conf/db.json`, then the configuration
-will be added like:
-
-```
-{
-  "db": { [contents of db.json ] }
-}
-
-```
-(Chainable)
-
-### etc.folder(dir)
-Loops through the files in `dir` and adds them to the configuration.
-All files will be added with `named=true` (see etc.file()), except for one
-special case when the filename is `config.*`. (Chainable)
-
-### etc.pkg()
-Try to find the local `package.json` for the consumer of etc and
-look for an `etc` key in it. If it exists then add the contents to the
-configuration.
-
-Example:
-```
-{
-  "name": "etc-example",
-  "description": "Etc example",
-  "main": "example.js",
-  "dependencies": {
-    "etc": "*"
-  },
-  "etc": {
-    "db": {
-      "host": "localhost",
-      "port": 3000
-    }
-  }
-}
-```
-(Chainable)
-
-### etc.etc()
-Look for `[app root]/etc` (based on location of package.json) and
-load it using `etc.folder()`. (Chainable)
-
-### etc.reverse()
-By default, each call to etc that adds more configuration pushes it on the
-bottom of the stack. If you wish to unshift conf onto the top of the stack
-instead you can call `etc.reverse()` followed by any other etc commands.
-Until you call `etc.reverse()` again all subsequent etc methods will continue
-to unshift.
-
-Plugins
--------
-Etc supports a simple plugin system, primarily useful for adding new file
-parsers. Plugins should implement an `attach` method like so:
-
-```js
-exports.attach = function(options) {
-  options = options || {};
-
-  // Plugin will be attached with the scope set to an etc instance.
-  var etc = this;
-
-  etc.parsers['xml'] = xmlparser;
-}
-
-function xmlparser(filePath) {
-  // Parse the file and return an object literal.
-}
-```
-
-### etc-yaml
-Support for YAML configuration files can be added via [etc-yaml](https://github.com/cpsubrian/node-etc-yaml).
-```js
-var etc = require('etc'),
-    path = require('path'),
-    conf = etc();
-
-conf.use(require('etc-yaml'));
-
-// Load a yaml file.
-conf.file(path.join(__dirname, 'config.yaml'));
-
-// Print the config.
-console.log(conf.toJSON());
-```
-
-### etc-redis
-Maybe eventually if I need it :) (or make it yourself).
-
+**Kind**: instance method of [<code>etc</code>](#etc)  
 
 Credits
 -------
-Inspired by [dominictarr/rc](https://github.com/dominictarr/rc) and
-[dominictarr/config-chain](https://github.com/dominictarr/config-chain), but
-with deep-merging and less trolling in the README :)
+Inspired by [cpsubrian/node-etc](https://github.com/cpsubrian/node-etc)
 
-
-Developed by [Terra Eclipse](http://www.terraeclipse.com)
+Developed by [CSECO](http://www.cseco.co.ke)
 --------------------------------------------------------
-Terra Eclipse, Inc. is a nationally recognized political technology and
-strategy firm located in Aptos, CA and Washington, D.C.
-
-[http://www.terraeclipse.com](http://www.terraeclipse.com)
+CSECO is a mechatronics firm specializing in engineering technology to be cheap enough to be affordable to low income earners.
 
 
-License: MIT
-------------
-Copyright (C) 2015 Terra Eclipse, Inc.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is furnished
-to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+[http://www.cseco.co.ke](http://www.cseco.co.ke)

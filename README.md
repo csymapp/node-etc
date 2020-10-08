@@ -64,7 +64,7 @@ conf.directory('/etc/node-etc');
 API
 ---
 
-Referer to the [documentation](/docs/ReadMe.md)
+Refer to the [documentation](/docs/ReadMe.md)
 
 <a name="etc"></a>
 

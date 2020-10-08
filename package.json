@@ -1,0 +1,36 @@
+{
+  "name": "node-etc",
+  "version": "1.0.0",
+  "description": "Configuration loader for node.js applications",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/csymapp/node-etc.git"
+  },
+  "keywords": [
+    "config",
+    "configuration",
+    "yaml",
+    "yml",
+    "json",
+    "packagejson",
+    "etc"
+  ],
+  "author": "Brian Onang'o",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/csymapp/node-etc/issues"
+  },
+  "homepage": "https://github.com/csymapp/node-etc#readme",
+  "dependencies": {
+    "clone": "^2.1.2",
+    "dotenv": "^8.2.0",
+    "fs-extra": "^9.0.1",
+    "js-yaml": "^3.14.0",
+    "tea-merge": "^0.1.0",
+    "yargs": "^16.0.3"
+  }
+}

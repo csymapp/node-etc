@@ -62,8 +62,8 @@ class etc {
                 recursive: true
             });
             filePathtoCreate = path.join(dirPath, filePath)
-            if (!fs.existsSync(filePath)) {
-                fs.createFileSync(filePath)
+            if (!fs.existsSync(filePathtoCreate)) {
+                fs.createFileSync(filePathtoCreate)
             }
         } catch (error) {
             error = filePath
@@ -72,8 +72,8 @@ class etc {
                 recursive: true
             });
             filePathtoCreate = path.join(dirPath, filePath)
-            if (!fs.existsSync(filePath)) {
-                fs.createFileSync(filePath)
+            if (!fs.existsSync(filePathtoCreate)) {
+                fs.createFileSync(filePathtoCreate)
             }
         }
     }

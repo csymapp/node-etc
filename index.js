@@ -204,9 +204,6 @@ class etc {
      * @param {string} fileName 
      */
     getFilePath(configType = '', fileName = '') {
-        if (fileName[0] === '/') { // absolute path supplied as argument
-            return fileName
-        }
         switch (configType) {
             case "json":
                 if (!fileName.match(/\.json$/)) {
@@ -230,6 +227,9 @@ class etc {
                 break;
             default:
                 throw `Unsupported configType ${configType}`
+        }
+        if (fileName[0] === '/') { // absolute path supplied as argument
+            return fileName
         }
         // look in project directory
         let directoryPath = process.cwd();

@@ -228,10 +228,6 @@ class etc {
             default:
                 throw `Unsupported configType ${configType}`
         }
-        if (fileName[0] === '/') { // absolute path supplied as argument
-            return fileName
-        }
-        // look in project directory
         let directoryPath = process.cwd();
         let lookforFile = (location, fileName) => {
             let whichLocation = path.join(location, fileName)
@@ -242,6 +238,22 @@ class etc {
             location = location.replace(/\/[^\/]*$/, '')
             return lookforFile(location, fileName)
         }
+
+        if (fileName[0] === '/') { // absolute path supplied as argument
+            
+            let filePath = lookforFile(fileName, fileName);
+            if(filePath === false){
+                if (configType === 'yaml' || configType === 'yml') {
+                    if (fileName.match(/\.yaml$/)) {
+                        fileName = fileName.replace(/\.yaml$/, '.yml')
+                    } else {
+                        fileName = fileName.replace(/\.yml$/, '.yaml')
+                    }
+                }
+            }
+            return fileName
+        }
+        
         let filePath = lookforFile(directoryPath, fileName);
         let projectName = this.packageJson().name || false
         if (!fs.existsSync(filePath)) {

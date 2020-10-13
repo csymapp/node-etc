@@ -4,6 +4,7 @@ const clone = require('clone')
 const dotenv = require('dotenv')
 const fs = require("fs-extra")
 const yaml = require('js-yaml')
+const shell = require('shelljs');
 const merge = require('tea-merge')
 
 class etc {
@@ -11,52 +12,113 @@ class etc {
     constructor() { }
 
     /**
-     * Read package.json [1] of current project or [2] from any other location. If dir is not supplied, the function moves up the directories in the cwd path and returns the first package.json found.
-     * @param {string} [dir] - directory name from which to read package.json. Can be either a directory name or absolute path of directory
-     * @returns {object} - Returns json object found or empty object 
+     * create configuration file in filePath if it does not exists
+     * @param {string} filePath - with the extensions [.json|.yaml|.yml|.env]if filename is supplied instead of absolute path, create in /etc/{appName} or in ~/etc/{appName} if permission is denied for /etc
      */
-    packageJson(dir = '') {
-        if (dir[0] === '/') { // absolute path supplied
-            return require(path.join(dir, 'package.json'))
+    createConfig(filePath) {
+        let extension = filePath.split('.').slice(-1)[0]
+       
+        let extensions = ["json", "env", "yaml", "yml"];
+        if(!extensions.includes(extension)){
+            let err = `unsupported extension ${extension}. use one of ${extensions}`
+            throw err
         }
-        let directoryPath = process.cwd();
-        let loops = true;
-        if (dir !== '') { // directory name supplied
-            loops = false;
-            let re = new RegExp(`(/${dir}[^\n]*)`);
-            directoryPath = directoryPath.replace(re, `/${dir}`)
+        let isAbsolutePath = false;
+        if (filePath[0] === '/') {
+            isAbsolutePath = true;
         }
-
-        let tryReading = (location) => {
-            location = path.join(location, 'package.json')
-            let tmp = false
+        let homeDir = shell.exec('echo ~', { silent: true }).stdout.replace(/\n/, '')
+        let homeEtc = path.join(homeDir, 'etc');
+        if (isAbsolutePath) {
             try {
-                tmp = require(location)
-                return tmp
+                let dirPath = filePath.replace(/\/[^\/]*$/, '')
+                fs.mkdirSync(dirPath, {
+                    recursive: true
+                });
+                if (!fs.existsSync(filePath)) {
+                    fs.createFileSync(filePath)
+                }
+                return true
             } catch (error) {
-                error = tmp;
-                return error
+                if (filePath.replace(/^\/etc/, homeEtc)) {
+                    filePath = filePath.replace(/^\/etc/, homeEtc)
+                    let dirPath = filePath.replace(/\/[^\/]*$/, '')
+                    fs.mkdirSync(dirPath, {
+                        recursive: true
+                    });
+                    if (!fs.existsSync(filePath)) {
+                        fs.createFileSync(filePath)
+                    }
+                }
+                return true
             }
         }
-        let ret = false;
-        while (true) {
-            ret = tryReading(directoryPath)
-            if (ret || directoryPath.length <= 1) break;
-            directoryPath = directoryPath.replace(/\/[^\/]*$/, '')
-            if (!loops) break
+        let packageJson = this.packageJson();
+        let appName = packageJson.name;
+        let dirPath, filePathtoCreate;
+        try {
+            dirPath = path.join('/etc', appName)
+            fs.mkdirSync(dirPath, {
+                recursive: true
+            });
+            filePathtoCreate = path.join(dirPath, filePath)
+            if (!fs.existsSync(filePath)) {
+                fs.createFileSync(filePath)
+            }
+        } catch (error) {
+            error = filePath
+            dirPath = path.join(homeEtc, appName)
+            fs.mkdirSync(dirPath, {
+                recursive: true
+            });
+            filePathtoCreate = path.join(dirPath, filePath)
+            if (!fs.existsSync(filePath)) {
+                fs.createFileSync(filePath)
+            }
         }
-        if (!ret) ret = {}
-        return ret
+    }
+
+    /**
+     * Read package.json [1] of current project or [2] from any other location. 
+     * If relative path is supplied for dir such as package.json or node-etc/package.json(=node-etc), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config
+     * @param {string} [dir='package.json'] - Either absolute or relative path, with/without package.json at the end.
+     * @returns {object} - Returns json object found or empty object 
+     */
+    packageJson(dir = 'package.json') {
+        if (!dir.match(/package\.json$/)) {
+            dir = path.join(dir, 'package.json')
+        }
+        return this.parseJSON(dir)
+    }
+
+    /**
+     * Get the root dir of current project by locating package.json
+     * @returns {string} - project root directory
+     */
+    projectRoot() {
+        let cwd1 = process.cwd()
+        let lookforFile = (location, fileName) => {
+            let whichLocation = path.join(location, fileName)
+            if (fs.existsSync(whichLocation)) {
+                return [location]
+            }
+            if (location.length <= 1) return false;
+            location = location.replace(/\/[^\/]*$/, '')
+            return [location, lookforFile(location, fileName)]
+        }
+        let root = lookforFile(cwd1, 'package.json');
+        return root[0]
     }
 
     /**
      * Read json file
-     * @param {string} filePath - file to read
+     * @param {string} filePath - relative or absolute path of file to read.
+     * If relative path is supplied for dir such as package.json or node-etc/package.json(=node-etc), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config
      * @returns {object} - Returns json object found or empty object
      */
     parseJSON(filePath) {
         try {
-            return require(filePath);
+            return require(this.getFilePath('json', filePath));
         } catch (error) {
             error = {}
             return error
@@ -64,175 +126,14 @@ class etc {
     }
 
     /**
-     * Read yaml file
-     * @param {string} [filePath] - file to read. Either absolute path or file name. If filename is not given, it reads conf.yaml File name is given with either .yaml/.yml extension or without.
-     * @returns {object} - Returns json object found or empty object
-     */
-    parseYAML(filePath = '') {
-        let filePaths = []
-        if (filePath === '') {
-            filePath = 'conf'
-        }
-        if (filePath[0] === '/') { // absolute path supplied
-            filePaths.push(filePath)
-        } else {
-            // check if it has extension
-            let filenames = []
-            let packageJson = this.packageJson();
-            if (!filePath.match(/\.y[a]?ml$/)) {
-                filenames.push(`${filePath}.yml`)
-                filenames.push(`${filePath}.yaml`)
-                if (packageJson.name) {
-                    filePaths.push(`/etc/${packageJson.name}/${filePath}.yml`)
-                    filePaths.push(`/etc/${packageJson.name}/${filePath}.yaml`)
-                }
-            } else {
-                filenames.push(filePath)
-                if (packageJson.name) {
-                    filePaths.push(`/etc/${packageJson.name}/${filePath}`)
-                }
-            }
-
-            let directoryPath = process.cwd();
-            let lookforFile = (location, fileName) => {
-                let whichLocation = path.join(location, fileName)
-                if (fs.existsSync(whichLocation)) {
-                    return whichLocation
-                }
-                if (location.length <= 1) return false;
-                location = location.replace(/\/[^\/]*$/, '')
-                return lookforFile(location, fileName)
-            }
-            filenames = filenames.map(fileName => lookforFile(directoryPath, fileName))
-            filenames.map(fileName => fileName ? filePaths.push(fileName) : false)
-        }
-        let ret = {}
-        filePaths.map(filePath => {
-            let yamlObject = {}
-            try {
-                let savedConfigs = fs.readFileSync(
-                    filePath,
-                    'utf-8'
-                )
-                yamlObject = yaml.safeLoad(savedConfigs) || {}
-            } catch (error) {
-                error = {}
-                yamlObject = error
-            }
-            ret = merge(ret, yamlObject)
-        })
-        return ret
-    }
-
-    /**
-     * return command line arguments
-     * @returns {object} - Returns object containing command line arguments
-     */
+    * return command line arguments
+    * @returns {object} - Returns object containing command line arguments
+    */
     argv() {
         let ret = clone(argv)
         delete ret["_"]
         delete ret["$0"]
         return ret;
-    }
-
-    /**
-     * Loads only environment variables from a .env file in either [1] current project or [2] from any other location and returns process.env. If dir is not supplied, the function moves up the directories in the cwd path and returns the first .env file found.
-     * @param {string} [dir] -  - directory name from which to read .env file. Can be either a directory name or absolute path of directory
-     * @returns {object} - Returns json object found or empty object 
-     */
-    parseDotEnvOnly(dir = '') {
-        let tmp = clone(process.env);
-        let allEnv = this.env(dir);
-        let ret = {};
-        for (let i in allEnv) {
-            if (!tmp[i]) {
-                ret[i] = allEnv[i]
-            }
-        }
-
-        for (let i in ret) {
-            delete process.env[i]
-        }
-        return ret
-    }
-
-    /**
-     * Loads environment variables from a .env file in either [1] current project or [2] from any other location and returns process.env. If dir is not supplied, the function moves up the directories in the cwd path and returns the first .env file found.
-     * If absolute path is not given for dir, it also loads .env from /etc/{dir}. If dir is not given, it is taken as the program name as contained in the package.json file in the root directory of the project.
-     * @param {string} [dir=''] - directory name from which to read .env file. Can be either a directory name or absolute path of directory
-     * @returns {object} - Returns json object found or empty object 
-     */
-    env(dir = '') {
-        let env = {};
-        let loops = true;
-        let directoryPath = process.cwd();
-        let absolutePath = false;
-        let dirProvided = false;
-
-        if (dir[0] === '/') { // absolute path supplied
-            loops = false;
-            absolutePath = true;
-            let envPath;
-            if (!dir.match(/\.env$/)) {
-                envPath = path.join(dir, '.env')
-            } else {
-                envPath = dir
-            }
-            dotenv.config({ path: envPath })
-        }
-
-        if (dir !== '') { // directory name supplied
-            loops = false;
-            dirProvided = true;
-            let re = new RegExp(`(/${dir}[^\n]*)`);
-            directoryPath = directoryPath.replace(re, `/${dir}`)
-        }
-
-        let tryReading = (location) => {
-            if (!location.match(/\.env$/)) {
-                location = path.join(location, dir)
-            }
-            if (!location.match(/\.env$/)) {
-                location = path.join(location, '.env')
-            }
-            // location = path.join(location, '.env')
-            let tmp = false
-            try {
-                if (fs.existsSync(location)) {
-                    dotenv.config({ path: location })
-                } else {
-                    throw 1
-                }
-                return tmp
-            } catch (error) {
-                error = tmp;
-                return error
-            }
-        }
-        let ret = false;
-        while (true) {
-            ret = tryReading(directoryPath)
-            if (ret || directoryPath.length <= 1) break;
-            directoryPath = directoryPath.replace(/\/[^\/]*$/, '')
-            if (!loops) break
-        }
-        if (!absolutePath) {
-            directoryPath = ''
-            if (dirProvided) {
-                directoryPath = `/etc/${dir}`;
-            } else {
-                let packageJson = this.packageJson();
-                if (packageJson.name) {
-                    directoryPath = `/etc/${packageJson.name}`;
-                }
-            }
-            loops = false;
-            ret = tryReading(directoryPath);
-        }
-
-        env = clone(process.env)
-        delete env["_"]
-        return env;
     }
 
     /**
@@ -260,8 +161,45 @@ class etc {
         })
         return ret
     }
+
     /**
-     * Get filepath if file with given name exists in root directory or project or in /etc/{programName}
+     * Read yaml file
+     * @param {string} [filePath='conf'] - relative or absolute path of file to read,  with either .yaml/.yml extension or without. If argument supplied is file.yaml, but file.yml is found instead, file.yml will be returned.
+     * If relative path is supplied for filePath such as config.yaml or node-etc/config.yaml(=node-etc/config), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config
+     * @returns {object} - Returns json object found or empty object
+     */
+    parseYAML(filePath = 'conf') {
+        let configType = 'yml'
+        if (filePath.match(/\.yaml$/)) {
+            configType = 'yaml'
+        }
+        let yFilePath = this.getFilePath(configType, filePath)
+        let yamlObject = {}
+        try {
+            let savedConfigs = fs.readFileSync(
+                yFilePath,
+                'utf-8'
+            )
+            yamlObject = yaml.safeLoad(savedConfigs) || {}
+        } catch (error) {
+            error = {}
+            yamlObject = error
+        }
+        return yamlObject
+    }
+
+    /**
+     * Loads environment variables from a .env file in either [1] current project or [2] from any other location and returns process.env. If dir is not supplied, the function moves up the directories in the cwd path and returns the first .env file found.
+     * If absolute path is not given for dir, it also loads .env from /etc/{dir}. If dir is not given, it is taken as the program name as contained in the package.json file in the root directory of the project.
+     * @param {string} [dir=''] - directory name from which to read .env file. Can be either a directory name or absolute path of directory
+     * @returns {object} - Returns json object found or empty object 
+     */
+    env(dir = '') {
+        return dotenv.config({ path: this.getFilePath('env', dir) }).parsed || {}
+    }
+
+    /**
+     * Get filepath if file with given name exists in: [1] the cwd path moving down one level till it is found [2] /etc/${appName} [3] ~/etc/${appName} [4] {projectRoot}/etc [5] {projectRoot}/.etc [6] {projectRoot}/config [7] {projectRoot}/config
      * @param {('json'|'yaml'|'yml'|'env')} configType 
      * @param {string} fileName 
      */
@@ -305,11 +243,83 @@ class etc {
             return lookforFile(location, fileName)
         }
         let filePath = lookforFile(directoryPath, fileName);
+        let projectName = this.packageJson().name || false
         if (!fs.existsSync(filePath)) {
-            let projectName = this.packageJson().name || false
             if (projectName) {
                 filePath = lookforFile(path.join('/etc', projectName, fileName), fileName);
+                if (filePath === false) {
+                    if (configType === 'yaml' || configType === 'yml') {
+                        if (fileName.match(/\.yaml$/)) {
+                            fileName = fileName.replace(/\.yaml$/, '.yml')
+                        } else {
+                            fileName = fileName.replace(/\.yml$/, '.yaml')
+                        }
+                        filePath = lookforFile(path.join('/etc', projectName, fileName), fileName);
+                    }
+                }
             }
+        }
+        if (!fs.existsSync(filePath)) {
+            if (projectName) {
+                let homeDir = shell.exec('echo ~', { silent: true }).stdout.replace(/\n/, '')
+                let homeEtc = path.join(homeDir, 'etc')
+                filePath = lookforFile(path.join(homeEtc, projectName, fileName), fileName);
+                if (filePath === false) {
+                    if (configType === 'yaml' || configType === 'yml') {
+                        if (fileName.match(/\.yaml$/)) {
+                            fileName = fileName.replace(/\.yaml$/, '.yml')
+                        } else {
+                            fileName = fileName.replace(/\.yml$/, '.yaml')
+                        }
+                        filePath = lookforFile(path.join(homeEtc, projectName, fileName), fileName);
+                    }
+                }
+            }
+        }
+        if (!fs.existsSync(filePath)) {
+            console.log(fileName)
+            let projectRoot = this.projectRoot();
+            filePath = lookforFile(path.join(projectRoot, 'etc', fileName), fileName);
+            if (!fs.existsSync(filePath)) {
+                filePath = lookforFile(path.join(projectRoot, '.etc', fileName), fileName);
+                if (filePath === false) {
+                    if (configType === 'yaml' || configType === 'yml') {
+                        if (fileName.match(/\.yaml$/)) {
+                            fileName = fileName.replace(/\.yaml$/, '.yml')
+                        } else {
+                            fileName = fileName.replace(/\.yml$/, '.yaml')
+                        }
+                        filePath = lookforFile(path.join(projectRoot, '.etc', fileName), fileName);
+                    }
+                }
+            }
+            if (!fs.existsSync(filePath)) {
+                filePath = lookforFile(path.join(projectRoot, 'config', fileName), fileName);
+                if (filePath === false) {
+                    if (configType === 'yaml' || configType === 'yml') {
+                        if (fileName.match(/\.yaml$/)) {
+                            fileName = fileName.replace(/\.yaml$/, '.yml')
+                        } else {
+                            fileName = fileName.replace(/\.yml$/, '.yaml')
+                        }
+                        filePath = lookforFile(path.join(projectRoot, 'config', fileName), fileName);
+                    }
+                }
+            }
+            if (!fs.existsSync(filePath)) {
+                filePath = lookforFile(path.join(projectRoot, '.config', fileName), fileName);
+                if (filePath === false) {
+                    if (configType === 'yaml' || configType === 'yml') {
+                        if (fileName.match(/\.yaml$/)) {
+                            fileName = fileName.replace(/\.yaml$/, '.yml')
+                        } else {
+                            fileName = fileName.replace(/\.yml$/, '.yaml')
+                        }
+                        filePath = lookforFile(path.join(projectRoot, '.config', fileName), fileName);
+                    }
+                }
+            }
+
         }
         if (!fs.existsSync(filePath)) {
             throw `${fileName} not found`
@@ -405,6 +415,11 @@ class etc {
      * @param {array} config - fields to save
      */
     save(configType, filePath, config) {
+        try {
+            filePath = this.getFilePath(configType, filePath)
+        } catch (error) {
+            throw error
+        }
         switch (configType) {
             case "json":
                 // configData = this.parseJSON(filePath);
@@ -424,20 +439,6 @@ class etc {
     }
 
     /**
-     * create file if it does not exists
-     * @param {string} filePath 
-     */
-    createConfig(filePath) {
-        let dirPath = filePath.replace(/\/[^\/]*$/, '')
-        fs.mkdirSync(dirPath, {
-            recursive: true
-        });
-        if (!fs.existsSync(filePath)) {
-            fs.createFileSync(filePath)
-        }
-    }
-
-    /**
      * Load all configurations
      */
     all() {
@@ -445,4 +446,17 @@ class etc {
     };
 }
 
+let test = new etc();
+// test.createConfig('/etc/abc')
+// test.createConfig('conf2.yaml');
+// console.log(test.packageJson('/home/brian/Code/CSECO/wifi-configurator'))
+// console.log(test.packageJson('node-etc'))
+// console.log(test.projectRoot())
+// console.log(test.parseJSON('packi'))
+console.log(test.parseYAML('packi.yaml'))
+
+console.log(test.env())
+test.save('yaml', 'packi', {add:'added'})
+test.editConfig('yaml', 'packi', {add1:'added'})
+test.addConfig('yaml', 'packi', {add12:'added'})
 module.exports = new etc();

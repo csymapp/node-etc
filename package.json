@@ -1,6 +1,6 @@
 {
   "name": "node-etc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Configuration loader for node.js applications",
   "main": "index.js",
   "scripts": {
@@ -30,6 +30,7 @@
     "dotenv": "^8.2.0",
     "fs-extra": "^9.0.1",
     "js-yaml": "^3.14.0",
+    "shelljs": "^0.8.4",
     "tea-merge": "^0.1.0",
     "yargs": "^16.0.3"
   },

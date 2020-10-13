@@ -93,7 +93,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line11">line 11</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line12">line 12</a>
     </li></ul></dd>
     
 
@@ -305,7 +305,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line354">line 354</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line364">line 364</a>
     </li></ul></dd>
     
 
@@ -393,7 +393,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line439">line 439</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line444">line 444</a>
     </li></ul></dd>
     
 
@@ -481,7 +481,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line131">line 131</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line132">line 132</a>
     </li></ul></dd>
     
 
@@ -547,7 +547,7 @@
 
 
 <div class="description">
-    create file if it does not exists
+    create configuration file in filePath if it does not exists
 </div>
 
 
@@ -599,7 +599,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last">with the extensions [.json|.yaml|.yml|.env]if filename is supplied instead of absolute path, create in /etc/{appName} or in ~/etc/{appName} if permission is denied for /etc</td>
         </tr>
 
     
@@ -640,7 +640,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line430">line 430</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line18">line 18</a>
     </li></ul></dd>
     
 
@@ -832,7 +832,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line371">line 371</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line381">line 381</a>
     </li></ul></dd>
     
 
@@ -969,7 +969,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line243">line 243</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line144">line 144</a>
     </li></ul></dd>
     
 
@@ -1179,7 +1179,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line390">line 390</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line400">line 400</a>
     </li></ul></dd>
     
 
@@ -1337,7 +1337,7 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line165">line 165</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line197">line 197</a>
     </li></ul></dd>
     
 
@@ -1403,7 +1403,7 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
 
 
 <div class="description">
-    Get filepath if file with given name exists in root directory or project or in /etc/{programName}
+    Get filepath if file with given name exists in: [1] the cwd path moving down one level till it is found [2] /etc/${appName} [3] ~/etc/${appName} [4] {projectRoot}/etc [5] {projectRoot}/.etc [6] {projectRoot}/config [7] {projectRoot}/config
 </div>
 
 
@@ -1528,7 +1528,7 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line268">line 268</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line206">line 206</a>
     </li></ul></dd>
     
 
@@ -1572,7 +1572,8 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
 
 
 <div class="description">
-    Read package.json [1] of current project or [2] from any other location. If dir is not supplied, the function moves up the directories in the cwd path and returns the first package.json found.
+    Read package.json [1] of current project or [2] from any other location. 
+If relative path is supplied for dir such as package.json or node-etc/package.json(=node-etc), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config
 </div>
 
 
@@ -1599,6 +1600,8 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
         <th>Attributes</th>
         
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -1635,8 +1638,14 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
             
 
             
+                <td class="default">
+                
+                    'package.json'
+                
+                </td>
+            
 
-            <td class="description last">directory name from which to read package.json. Can be either a directory name or absolute path of directory</td>
+            <td class="description last">Either absolute or relative path, with/without package.json at the end.</td>
         </tr>
 
     
@@ -1677,178 +1686,7 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line18">line 18</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    - Returns json object found or empty object
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="parseDotEnvOnly"><span class="type-signature"></span>parseDotEnvOnly<span class="signature">(dir<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Loads only environment variables from a .env file in either [1] current project or [2] from any other location and returns process.env. If dir is not supplied, the function moves up the directories in the cwd path and returns the first .env file found.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>dir</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">- directory name from which to read .env file. Can be either a directory name or absolute path of directory</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line143">line 143</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line87">line 87</a>
     </li></ul></dd>
     
 
@@ -1966,7 +1804,8 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
 
             
 
-            <td class="description last">file to read</td>
+            <td class="description last">relative or absolute path of file to read.
+If relative path is supplied for dir such as package.json or node-etc/package.json(=node-etc), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config</td>
         </tr>
 
     
@@ -2007,7 +1846,7 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line57">line 57</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line119">line 119</a>
     </li></ul></dd>
     
 
@@ -2101,6 +1940,8 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -2136,8 +1977,15 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
             
 
             
+                <td class="default">
+                
+                    'conf'
+                
+                </td>
+            
 
-            <td class="description last">file to read. Either absolute path or file name. If filename is not given, it reads conf.yaml File name is given with either .yaml/.yml extension or without.</td>
+            <td class="description last">relative or absolute path of file to read,  with either .yaml/.yml extension or without. If argument supplied is file.yaml, but file.yml is found instead, file.yml will be returned.
+If relative path is supplied for filePath such as config.yaml or node-etc/config.yaml(=node-etc/config), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config</td>
         </tr>
 
     
@@ -2178,7 +2026,7 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line71">line 71</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line171">line 171</a>
     </li></ul></dd>
     
 
@@ -2219,6 +2067,116 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
     <dd>
         
 <span class="param-type">object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="projectRoot"><span class="type-signature"></span>projectRoot<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Get the root dir of current project by locating package.json
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line98">line 98</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - project root directory
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
 
 
     </dd>
@@ -2392,7 +2350,7 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line326">line 326</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line336">line 336</a>
     </li></ul></dd>
     
 
@@ -2584,7 +2542,7 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line407">line 407</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line417">line 417</a>
     </li></ul></dd>
     
 
@@ -2636,7 +2594,7 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Oct 08 2020 12:38:16 GMT+0300 (East Africa Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Oct 13 2020 12:53:22 GMT+0300 (East Africa Time)
 </footer>
 
 <script> prettyPrint(); </script>

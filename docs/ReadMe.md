@@ -5,20 +5,20 @@
 
 * [etc](#etc)
     * [new etc()](#new_etc_new)
+    * [.createConfig(filePath)](#etc+createConfig)
     * [.packageJson([dir])](#etc+packageJson) ⇒ <code>object</code>
+    * [.projectRoot()](#etc+projectRoot) ⇒ <code>string</code>
     * [.parseJSON(filePath)](#etc+parseJSON) ⇒ <code>object</code>
-    * [.parseYAML([filePath])](#etc+parseYAML) ⇒ <code>object</code>
     * [.argv()](#etc+argv) ⇒ <code>object</code>
-    * [.parseDotEnvOnly([dir])](#etc+parseDotEnvOnly) ⇒ <code>object</code>
-    * [.env([dir])](#etc+env) ⇒ <code>object</code>
     * [.directory(dir)](#etc+directory) ⇒ <code>object</code>
+    * [.parseYAML([filePath])](#etc+parseYAML) ⇒ <code>object</code>
+    * [.env([dir])](#etc+env) ⇒ <code>object</code>
     * [.getFilePath(configType, fileName)](#etc+getFilePath)
     * [.readConfigData(configType, filePath, config)](#etc+readConfigData)
     * [.addConfig(configType, filePath, config)](#etc+addConfig)
     * [.deleteConfig(configType, filePath, config)](#etc+deleteConfig)
     * [.editConfig(configType, filePath, config)](#etc+editConfig)
     * [.save(configType, filePath, config)](#etc+save)
-    * [.createConfig(filePath)](#etc+createConfig)
     * [.all()](#etc+all)
 
 <a name="new_etc_new"></a>
@@ -26,18 +26,37 @@
 ### new etc()
 constructor
 
+<a name="etc+createConfig"></a>
+
+### etc.createConfig(filePath)
+create configuration file in filePath if it does not exists
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filePath | <code>string</code> | with the extensions [.json|.yaml|.yml|.env]if filename is supplied instead of absolute path, create in /etc/{appName} or in ~/etc/{appName} if permission is denied for /etc |
+
 <a name="etc+packageJson"></a>
 
 ### etc.packageJson([dir]) ⇒ <code>object</code>
-Read package.json [1] of current project or [2] from any other location. If dir is not supplied, the function moves up the directories in the cwd path and returns the first package.json found.
+Read package.json [1] of current project or [2] from any other location. 
+If relative path is supplied for dir such as package.json or node-etc/package.json(=node-etc), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config
 
 **Kind**: instance method of [<code>etc</code>](#etc)  
 **Returns**: <code>object</code> - - Returns json object found or empty object  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| [dir] | <code>string</code> | directory name from which to read package.json. Can be either a directory name or absolute path of directory |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [dir] | <code>string</code> | <code>&quot;&#x27;package.json&#x27;&quot;</code> | Either absolute or relative path, with/without package.json at the end. |
 
+<a name="etc+projectRoot"></a>
+
+### etc.projectRoot() ⇒ <code>string</code>
+Get the root dir of current project by locating package.json
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+**Returns**: <code>string</code> - - project root directory  
 <a name="etc+parseJSON"></a>
 
 ### etc.parseJSON(filePath) ⇒ <code>object</code>
@@ -48,7 +67,25 @@ Read json file
 
 | Param | Type | Description |
 | --- | --- | --- |
-| filePath | <code>string</code> | file to read |
+| filePath | <code>string</code> | relative or absolute path of file to read. If relative path is supplied for dir such as package.json or node-etc/package.json(=node-etc), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config |
+
+<a name="etc+argv"></a>
+
+### etc.argv() ⇒ <code>object</code>
+return command line arguments
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+**Returns**: <code>object</code> - - Returns object containing command line arguments  
+<a name="etc+directory"></a>
+
+### etc.directory(dir) ⇒ <code>object</code>
+read configuration from .yaml/.yml, .env and json files in given directory.
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| dir | <code>string</code> | absolute path of directory |
 
 <a name="etc+parseYAML"></a>
 
@@ -58,28 +95,9 @@ Read yaml file
 **Kind**: instance method of [<code>etc</code>](#etc)  
 **Returns**: <code>object</code> - - Returns json object found or empty object  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| [filePath] | <code>string</code> | file to read. Either absolute path or file name. If filename is not given, it reads conf.yaml File name is given with either .yaml/.yml extension or without. |
-
-<a name="etc+argv"></a>
-
-### etc.argv() ⇒ <code>object</code>
-return command line arguments
-
-**Kind**: instance method of [<code>etc</code>](#etc)  
-**Returns**: <code>object</code> - - Returns object containing command line arguments  
-<a name="etc+parseDotEnvOnly"></a>
-
-### etc.parseDotEnvOnly([dir]) ⇒ <code>object</code>
-Loads only environment variables from a .env file in either [1] current project or [2] from any other location and returns process.env. If dir is not supplied, the function moves up the directories in the cwd path and returns the first .env file found.
-
-**Kind**: instance method of [<code>etc</code>](#etc)  
-**Returns**: <code>object</code> - - Returns json object found or empty object  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [dir] | <code>string</code> | - directory name from which to read .env file. Can be either a directory name or absolute path of directory |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [filePath] | <code>string</code> | <code>&quot;&#x27;conf&#x27;&quot;</code> | relative or absolute path of file to read,  with either .yaml/.yml extension or without. If argument supplied is file.yaml, but file.yml is found instead, file.yml will be returned. If relative path is supplied for filePath such as config.yaml or node-etc/config.yaml(=node-etc/config), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config |
 
 <a name="etc+env"></a>
 
@@ -94,21 +112,10 @@ If absolute path is not given for dir, it also loads .env from /etc/{dir}. If di
 | --- | --- | --- | --- |
 | [dir] | <code>string</code> | <code>&quot;&#x27;&#x27;&quot;</code> | directory name from which to read .env file. Can be either a directory name or absolute path of directory |
 
-<a name="etc+directory"></a>
-
-### etc.directory(dir) ⇒ <code>object</code>
-read configuration from .yaml/.yml, .env and json files in given directory.
-
-**Kind**: instance method of [<code>etc</code>](#etc)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| dir | <code>string</code> | absolute path of directory |
-
 <a name="etc+getFilePath"></a>
 
 ### etc.getFilePath(configType, fileName)
-Get filepath if file with given name exists in root directory or project or in /etc/{programName}
+Get filepath if file with given name exists in: [1] the cwd path moving down one level till it is found [2] /etc/${appName} [3] ~/etc/${appName} [4] {projectRoot}/etc [5] {projectRoot}/.etc [6] {projectRoot}/config [7] {projectRoot}/config
 
 **Kind**: instance method of [<code>etc</code>](#etc)  
 
@@ -181,17 +188,6 @@ Save config values
 | configType | <code>&#x27;json&#x27;</code> \| <code>&#x27;yaml&#x27;</code> \| <code>&#x27;yml&#x27;</code> \| <code>&#x27;env&#x27;</code> |  |
 | filePath | <code>string</code> | absolute path |
 | config | <code>array</code> | fields to save |
-
-<a name="etc+createConfig"></a>
-
-### etc.createConfig(filePath)
-create file if it does not exists
-
-**Kind**: instance method of [<code>etc</code>](#etc)  
-
-| Param | Type |
-| --- | --- |
-| filePath | <code>string</code> | 
 
 <a name="etc+all"></a>
 

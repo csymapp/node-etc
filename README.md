@@ -278,3 +278,8 @@ CSECO is a mechatronics firm specializing in engineering technology to be cheap 
 
 
 [http://www.cseco.co.ke](http://www.cseco.co.ke)
+
+Todo
+- [ ] Add ~/etc to paths for config files
+- [ ] fix yaml extension in parseYAML
+

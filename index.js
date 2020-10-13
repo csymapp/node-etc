@@ -446,17 +446,4 @@ class etc {
     };
 }
 
-let test = new etc();
-// test.createConfig('/etc/abc')
-// test.createConfig('conf2.yaml');
-// console.log(test.packageJson('/home/brian/Code/CSECO/wifi-configurator'))
-// console.log(test.packageJson('node-etc'))
-// console.log(test.projectRoot())
-// console.log(test.parseJSON('packi'))
-console.log(test.parseYAML('packi.yaml'))
-
-console.log(test.env())
-test.save('yaml', 'packi', {add:'added'})
-test.editConfig('yaml', 'packi', {add1:'added'})
-test.addConfig('yaml', 'packi', {add12:'added'})
 module.exports = new etc();

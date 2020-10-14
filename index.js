@@ -4,7 +4,8 @@ const clone = require('clone')
 const dotenv = require('dotenv')
 const fs = require("fs-extra")
 const yaml = require('js-yaml')
-const shell = require('shelljs');
+// const shell = require('shelljs');
+const child_process = require('child_process');
 const merge = require('tea-merge')
 
 class etc {
@@ -27,7 +28,8 @@ class etc {
         if (filePath[0] === '/') {
             isAbsolutePath = true;
         }
-        let homeDir = shell.exec('echo ~', { silent: true }).stdout.replace(/\n/, '')
+        // let homeDir = shell.exec('echo ~', { silent: true }).stdout.replace(/\n/, '')
+        let homeDir = child_process.execSync('echo ~').toString().replace(/\n/, '')
         let homeEtc = path.join(homeDir, 'etc');
         if (isAbsolutePath) {
             try {
@@ -273,7 +275,8 @@ class etc {
         }
         if (!fs.existsSync(filePath)) {
             if (projectName) {
-                let homeDir = shell.exec('echo ~', { silent: true }).stdout.replace(/\n/, '')
+                // let homeDir = shell.exec('echo ~', { silent: true }).stdout.replace(/\n/, '')
+                let homeDir = child_process.execSync('echo ~').toString().replace(/\n/, '')
                 let homeEtc = path.join(homeDir, 'etc')
                 filePath = lookforFile(path.join(homeEtc, projectName, fileName), fileName);
                 if (filePath === false) {

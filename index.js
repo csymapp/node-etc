@@ -289,7 +289,6 @@ class etc {
             }
         }
         if (!fs.existsSync(filePath)) {
-            console.log(fileName)
             let projectRoot = this.projectRoot();
             filePath = lookforFile(path.join(projectRoot, 'etc', fileName), fileName);
             if (!fs.existsSync(filePath)) {

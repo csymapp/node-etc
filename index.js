@@ -456,7 +456,7 @@ class etc {
      * Load all configurations
      */
     all() {
-        return merge(this.argv(), this.parseDotEnvOnly(), this.packageJson(), this.parseYAML());
+        return merge(this.argv(), this.packageJson(), this.parseYAML(), this.parseJSON(), this.env());
     };
 }
 

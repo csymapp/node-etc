@@ -18,9 +18,9 @@ class etc {
      */
     createConfig(filePath) {
         let extension = filePath.split('.').slice(-1)[0]
-       
+
         let extensions = ["json", "env", "yaml", "yml"];
-        if(!extensions.includes(extension)){
+        if (!extensions.includes(extension)) {
             let err = `unsupported extension ${extension}. use one of ${extensions}`
             throw err
         }
@@ -242,9 +242,9 @@ class etc {
         }
 
         if (fileName[0] === '/') { // absolute path supplied as argument
-            
+
             let filePath = lookforFile(fileName, fileName);
-            if(filePath === false){
+            if (filePath === false) {
                 if (configType === 'yaml' || configType === 'yml') {
                     if (fileName.match(/\.yaml$/)) {
                         fileName = fileName.replace(/\.yaml$/, '.yml')
@@ -255,7 +255,7 @@ class etc {
             }
             return fileName
         }
-        
+
         let filePath = lookforFile(directoryPath, fileName);
         let projectName = this.packageJson().name || false
         if (!fs.existsSync(filePath)) {
@@ -381,9 +381,16 @@ class etc {
         } catch (error) {
             throw error
         }
-        let configData = this.readConfigData(configType, filePath)
+        let configData = this.readConfigData(configType, filePath);
+        // check that config data does not exist in configData;
+        for (let key in config) {
+            if(configData[key] !== undefined){
+                throw new Error('The configuration to add already exists and we cannot overwrite. Try editConfig() instead')
+            }
+        }
         configData = merge(configData, config)
         this.save(configType, filePath, configData)
+        return true
     }
 
     /**

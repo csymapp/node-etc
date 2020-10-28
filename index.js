@@ -6,7 +6,7 @@ const fs = require("fs-extra")
 const yaml = require('js-yaml')
 // const shell = require('shelljs');
 const child_process = require('child_process');
-const merge = require('tea-merge')
+const merge = require('deepmerge')
 
 class etc {
     /** constructor */

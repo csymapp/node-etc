@@ -102,7 +102,7 @@ class etc {
         if (!dir.match(/package\.json$/)) {
             dir = path.join(dir, 'package.json')
         }
-        return this.parseJSON(dir)
+        return dir
     }
 
     /**

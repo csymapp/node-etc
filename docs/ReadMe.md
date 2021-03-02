@@ -7,6 +7,7 @@
     * [new etc()](#new_etc_new)
     * [.createConfig(filePath)](#etc+createConfig)
     * [.packageJson([dir])](#etc+packageJson) ⇒ <code>object</code>
+    * [.packageJsonDir(dir)](#etc+packageJsonDir) ⇒ <code>string</code>
     * [.projectRoot()](#etc+projectRoot) ⇒ <code>string</code>
     * [.parseJSON(filePath)](#etc+parseJSON) ⇒ <code>object</code>
     * [.argv()](#etc+argv) ⇒ <code>object</code>
@@ -49,6 +50,18 @@ If relative path is supplied for dir such as package.json or node-etc/package.js
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [dir] | <code>string</code> | <code>&quot;&#x27;package.json&#x27;&quot;</code> | Either absolute or relative path, with/without package.json at the end. |
+
+<a name="etc+packageJsonDir"></a>
+
+### etc.packageJsonDir(dir) ⇒ <code>string</code>
+Get path to package.json read by packageJson
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+**Returns**: <code>string</code> - the path to the package.json read by packageJson  
+
+| Param | Type | Default |
+| --- | --- | --- |
+| dir | <code>string</code> | <code>&quot;package.json&quot;</code> | 
 
 <a name="etc+projectRoot"></a>
 

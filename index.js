@@ -92,6 +92,18 @@ class etc {
         }
         return this.parseJSON(dir)
     }
+    
+    /**
+     * Get path to package.json read by packageJson
+     * @param {string} dir 
+     * @returns {string} the path to the package.json read by packageJson
+     */
+    packageJsonDir(dir = 'package.json') {
+        if (!dir.match(/package\.json$/)) {
+            dir = path.join(dir, 'package.json')
+        }
+        return this.parseJSON(dir)
+    }
 
     /**
      * Get the root dir of current project by locating package.json

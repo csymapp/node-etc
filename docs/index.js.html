@@ -32,8 +32,9 @@ const clone = require('clone')
 const dotenv = require('dotenv')
 const fs = require("fs-extra")
 const yaml = require('js-yaml')
-const shell = require('shelljs');
-const merge = require('tea-merge')
+// const shell = require('shelljs');
+const child_process = require('child_process');
+const merge = require('deepmerge')
 
 class etc {
     /** constructor */
@@ -45,9 +46,9 @@ class etc {
      */
     createConfig(filePath) {
         let extension = filePath.split('.').slice(-1)[0]
-       
+
         let extensions = ["json", "env", "yaml", "yml"];
-        if(!extensions.includes(extension)){
+        if (!extensions.includes(extension)) {
             let err = `unsupported extension ${extension}. use one of ${extensions}`
             throw err
         }
@@ -55,7 +56,8 @@ class etc {
         if (filePath[0] === '/') {
             isAbsolutePath = true;
         }
-        let homeDir = shell.exec('echo ~', { silent: true }).stdout.replace(/\n/, '')
+        // let homeDir = shell.exec('echo ~', { silent: true }).stdout.replace(/\n/, '')
+        let homeDir = child_process.execSync('echo ~').toString().replace(/\n/, '')
         let homeEtc = path.join(homeDir, 'etc');
         if (isAbsolutePath) {
             try {
@@ -90,8 +92,8 @@ class etc {
                 recursive: true
             });
             filePathtoCreate = path.join(dirPath, filePath)
-            if (!fs.existsSync(filePath)) {
-                fs.createFileSync(filePath)
+            if (!fs.existsSync(filePathtoCreate)) {
+                fs.createFileSync(filePathtoCreate)
             }
         } catch (error) {
             error = filePath
@@ -100,8 +102,8 @@ class etc {
                 recursive: true
             });
             filePathtoCreate = path.join(dirPath, filePath)
-            if (!fs.existsSync(filePath)) {
-                fs.createFileSync(filePath)
+            if (!fs.existsSync(filePathtoCreate)) {
+                fs.createFileSync(filePathtoCreate)
             }
         }
     }
@@ -113,6 +115,18 @@ class etc {
      * @returns {object} - Returns json object found or empty object 
      */
     packageJson(dir = 'package.json') {
+        if (!dir.match(/package\.json$/)) {
+            dir = path.join(dir, 'package.json')
+        }
+        return this.parseJSON(dir)
+    }
+    
+    /**
+     * Get path to package.json read by packageJson
+     * @param {string} dir 
+     * @returns {string} the path to the package.json read by packageJson
+     */
+    packageJsonDir(dir = 'package.json') {
         if (!dir.match(/package\.json$/)) {
             dir = path.join(dir, 'package.json')
         }
@@ -232,9 +246,6 @@ class etc {
      * @param {string} fileName 
      */
     getFilePath(configType = '', fileName = '') {
-        if (fileName[0] === '/') { // absolute path supplied as argument
-            return fileName
-        }
         switch (configType) {
             case "json":
                 if (!fileName.match(/\.json$/)) {
@@ -259,7 +270,6 @@ class etc {
             default:
                 throw `Unsupported configType ${configType}`
         }
-        // look in project directory
         let directoryPath = process.cwd();
         let lookforFile = (location, fileName) => {
             let whichLocation = path.join(location, fileName)
@@ -270,6 +280,22 @@ class etc {
             location = location.replace(/\/[^\/]*$/, '')
             return lookforFile(location, fileName)
         }
+
+        if (fileName[0] === '/') { // absolute path supplied as argument
+
+            let filePath = lookforFile(fileName, fileName);
+            if (filePath === false) {
+                if (configType === 'yaml' || configType === 'yml') {
+                    if (fileName.match(/\.yaml$/)) {
+                        fileName = fileName.replace(/\.yaml$/, '.yml')
+                    } else {
+                        fileName = fileName.replace(/\.yml$/, '.yaml')
+                    }
+                }
+            }
+            return fileName
+        }
+
         let filePath = lookforFile(directoryPath, fileName);
         let projectName = this.packageJson().name || false
         if (!fs.existsSync(filePath)) {
@@ -289,7 +315,8 @@ class etc {
         }
         if (!fs.existsSync(filePath)) {
             if (projectName) {
-                let homeDir = shell.exec('echo ~', { silent: true }).stdout.replace(/\n/, '')
+                // let homeDir = shell.exec('echo ~', { silent: true }).stdout.replace(/\n/, '')
+                let homeDir = child_process.execSync('echo ~').toString().replace(/\n/, '')
                 let homeEtc = path.join(homeDir, 'etc')
                 filePath = lookforFile(path.join(homeEtc, projectName, fileName), fileName);
                 if (filePath === false) {
@@ -305,7 +332,6 @@ class etc {
             }
         }
         if (!fs.existsSync(filePath)) {
-            console.log(fileName)
             let projectRoot = this.projectRoot();
             filePath = lookforFile(path.join(projectRoot, 'etc', fileName), fileName);
             if (!fs.existsSync(filePath)) {
@@ -395,9 +421,16 @@ class etc {
         } catch (error) {
             throw error
         }
-        let configData = this.readConfigData(configType, filePath)
+        let configData = this.readConfigData(configType, filePath);
+        // check that config data does not exist in configData;
+        for (let key in config) {
+            if(configData[key] !== undefined){
+                throw new Error('The configuration to add already exists and we cannot overwrite. Try editConfig() instead')
+            }
+        }
         configData = merge(configData, config)
         this.save(configType, filePath, configData)
+        return true
     }
 
     /**
@@ -470,7 +503,7 @@ class etc {
      * Load all configurations
      */
     all() {
-        return merge(this.argv(), this.parseDotEnvOnly(), this.packageJson(), this.parseYAML());
+        return merge(this.argv(), this.packageJson(), this.parseYAML(), this.parseJSON(), this.env());
     };
 }
 
@@ -490,7 +523,7 @@ module.exports = new etc();</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Oct 13 2020 12:59:24 GMT+0300 (East Africa Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Mar 02 2021 12:16:27 GMT+0300 (East Africa Time)
 </footer>
 
 <script> prettyPrint(); </script>

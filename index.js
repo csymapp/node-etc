@@ -102,7 +102,23 @@ class etc {
         if (!dir.match(/package\.json$/)) {
             dir = path.join(dir, 'package.json')
         }
-        return dir
+        return this.parseJSONPath(dir)
+    }
+
+    /**
+     * Read json file and return path if json file is valid
+     * @param {string} filePath - relative or absolute path of file to read.
+     * If relative path is supplied for dir such as package.json or node-etc/package.json(=node-etc), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config
+     * @returns {object} - Returns json object found or empty object
+     */
+    parseJSONPath(filePath) {
+        try {
+            require(this.getFilePath('json', filePath));
+            return filePath
+        } catch (error) {
+            error = {}
+            return error
+        }
     }
 
     /**

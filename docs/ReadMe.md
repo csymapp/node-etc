@@ -8,6 +8,7 @@
     * [.createConfig(filePath)](#etc+createConfig)
     * [.packageJson([dir])](#etc+packageJson) ⇒ <code>object</code>
     * [.packageJsonDir(dir)](#etc+packageJsonDir) ⇒ <code>string</code>
+    * [.parseJSONPath(filePath)](#etc+parseJSONPath) ⇒ <code>object</code>
     * [.projectRoot()](#etc+projectRoot) ⇒ <code>string</code>
     * [.parseJSON(filePath)](#etc+parseJSON) ⇒ <code>object</code>
     * [.argv()](#etc+argv) ⇒ <code>object</code>
@@ -62,6 +63,18 @@ Get path to package.json read by packageJson
 | Param | Type | Default |
 | --- | --- | --- |
 | dir | <code>string</code> | <code>&quot;package.json&quot;</code> | 
+
+<a name="etc+parseJSONPath"></a>
+
+### etc.parseJSONPath(filePath) ⇒ <code>object</code>
+Read json file and return path if json file is valid
+
+**Kind**: instance method of [<code>etc</code>](#etc)  
+**Returns**: <code>object</code> - - Returns json object found or empty object  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filePath | <code>string</code> | relative or absolute path of file to read. If relative path is supplied for dir such as package.json or node-etc/package.json(=node-etc), the file will we looked for in [1] the cwd path moving down one level till it is found, [2] in /etc/${appName}, [3] in ~/etc/${appName}, [4] {projectRoot}/etc, [5] {projectRoot}/.etc, [6] {projectRoot}/config, [7] {projectRoot}/config |
 
 <a name="etc+projectRoot"></a>
 

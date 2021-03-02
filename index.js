@@ -114,8 +114,13 @@ class etc {
     parseJSONPath(filePath) {
         try {
             require(this.getFilePath('json', filePath));
-            if(filePath[0] === '/')return filePath
-            return `${process.cwd()}/${filePath}`
+            if(filePath[0] === '/'){
+                filePath = file.split('/')
+                filePath.pop()
+                filePath = filePath.join('/');
+                return filePath
+            }
+            return `${process.cwd()}/`
         } catch (error) {
             error = {}
             return error

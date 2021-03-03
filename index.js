@@ -115,7 +115,7 @@ class etc {
         try {
             filePath = this.getFilePath('json', filePath);
             if(filePath[0] === '/'){
-                filePath = file.split('/')
+                filePath = filePath.split('/')
                 filePath.pop()
                 filePath = filePath.join('/');
                 return filePath

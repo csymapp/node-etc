@@ -23,6 +23,13 @@ When relative path is supplied for  fileName in any of the functions, the file i
 7. {projectRoot}/config
 
 
+Preparatory
+--------
+Remember to change cwd to the root of your application so node-etc does not fail for global packages. Do this by setting the following in you entry js file
+```javascript
+process.chdir(__dirname);
+```
+
 Examples
 --------
 #### Create configuration
